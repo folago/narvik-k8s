@@ -13,12 +13,14 @@ Kubernetes is an open-source system for automating deployment,
 scaling, and management of containerized applications.
 
 
+in other words _The_Cloud™_
 
+or at least one of the building blocks
 
 
 * What Kubernetes isn't
 
-Silver bullet/panacea
+Silver bullet/Panacea
 
 
 It's not the solution to all the problems afflicting IT
@@ -386,3 +388,18 @@ Google?
 
 .link https://kubernetes.io/docs/getting-started-guides/windows/ is coming
 
+
+
+* Kubernetes @home?
+
+.link https://github.com/kubernetes/minikube minikube
+
+
+or go to the Cloud 
+
+.link https://kubernetes.io/docs/setup/pick-right-solution/#turnkey-cloud-solutions  turnkey-cloud-solutions
+ 
+.link https://github.com/kubernetes/kops kops (AWS)
+
+
+.link https://github.com/kelseyhightower/kubernetes-the-hard-way kubernetes-the-hard-way
