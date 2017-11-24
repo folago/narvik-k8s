@@ -1,5 +1,5 @@
 Kubernets
-22 Nov 2017
+28 Nov 2017
 
 Giacomo Tartari
 Senior Engineer, UiT-ITA-HPC
@@ -20,10 +20,11 @@ or at least one of the building blocks
 
 * What Kubernetes isn't
 
-Silver bullet/Panacea
+- Silver bullet
 
+- Panacea
 
-It's not the solution to all the problems afflicting IT
+- Solution to all the problems afflicting IT
 
 
 * Why?
@@ -33,6 +34,8 @@ Because we should stop running servers and start running services
 Because servers are pets and we need cattle
 
 We need a tool to mass-manage and streamline operations/development
+
+Kubernetes appers to be the winner of the container orchestration 
 
 
 * Intermezzo - containers
@@ -61,59 +64,99 @@ Scales to ~5000 nodes
 
 Yaml files 
 
+* Pods
+
+Set of containers 
+
+Docker containers <-> processes 
+
+Pods are set of process running in a virtualized OS 
+
 * Objects/maniest files
 
-	apiVersion: v1
-	kind: Pod
-	metadata:
-	  name: constraintpod
-	  labels:
-		env: production
-	spec:
-	  containers:
-	  - name: sise
-	    image: mhausenblas/simpleservice:0.5.0
-	    ports:
-	    - containerPort: 9876
-	    resources:
-	      limits:
-	        memory: "64Mi"
-	        cpu: "500m"
-		livenessProbe:
-		  initialDelaySeconds: 2
-		  periodSeconds: 5
-		  httpGet:
-			path: /health
-			port: 9876
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: constraintpod
+    labels:
+    env: production
+  spec:
+    containers:
+    - name: sise
+      image: mhausenblas/simpleservice:0.5.0
+      ports:
+      - containerPort: 9876
+      resources:
+        limits:
+          memory: "64Mi"
+          cpu: "500m"
+    livenessProbe:
+      initialDelaySeconds: 2
+      periodSeconds: 5
+      httpGet:
+      path: /health
+      port: 9876
 
 .link http://kubernetesbyexample.com/ file from here
 
 
-* ReplicationControlloer/Deployment
+* ReplicationControlloer
 
 
-	apiVersion: apps/v1beta1
-	kind: Deployment
-	metadata:
-	  name: sise-deploy
-	spec:
-	  replicas: 2
-	  template:
-	    metadata:
-	      labels:
-	        app: sise
-	    spec:
-	      containers:
-	      - name: sise
-	        image: mhausenblas/simpleservice:0.5.0
-	        ports:
-	        - containerPort: 9876
-	        env:
-	        - name: SIMPLE_SERVICE_VERSION
-	          value: "0.9"
+  apiVersion: v1
+  kind: ReplicationController
+  metadata:
+    name: rcex
+  spec:
+    replicas: 1
+    selector:
+      app: sise
+    template: # pod starts here
+      metadata:
+        name: somename
+        labels:
+          app: sise
+      spec:
+        containers:
+        - name: sise
+          image: mhausenblas/simpleservice:0.5.0
+          ports:
+          - containerPort: 9876
 
-Handles the rollout/rollback of different versions
+Pod supervisor	
 
+* Deployment
+
+
+  apiVersion: apps/v1beta1
+  kind: Deployment
+  metadata:
+    name: sise-deploy
+  spec:
+    replicas: 2
+    template:
+      metadata:
+        labels:
+          app: sise
+      spec:
+        containers:
+        - name: sise
+          image: mhausenblas/simpleservice:0.5.0
+          ports:
+          - containerPort: 9876
+          env:
+          - name: SIMPLE_SERVICE_VERSION
+            value: "0.9"
+
+ReplicaSet supervisor
+
+* Deployments
+  
+Handles the rollout of new versions
+
+Automatic rollback in case somethig is wrong
+
+Keep history of deployments
 
 
 
@@ -137,6 +180,18 @@ Handles the rollout/rollback of different versions
 #			path: /health
 #			port: 9876
 
+* Cloud @home
+
+CI/CD pipeline
+
+Git repository 
+
+Docker registry (private)
+
+Kubernetes
+
+(Storage)
+
 * What about the rest?
 
 I need moar 
@@ -157,29 +212,29 @@ My pods need TLS termination
 
 * ConfigMap
 
-	apiVersion: v1
-	kind: ConfigMap
-	metadata:
-	  name: myapp-config
-	data:
-	  key: value
-	  newKey: |
-		very long value that
-		can span multiple lines
-		such as s config file
+  apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: myapp-config
+  data:
+    key: value
+    newKey: |
+    very long value that
+    can span multiple lines
+    such as s config file
 
 Keys can be mounted in containers as env variables or volumes
 
 
 * Secrets
 
-	apiVersion: v1
-	kind: Secret
-	metadata:
-	  name: mariadb-secrets
-	type: Opaque
-	data:
-	  root: cG9ydHVz
+  apiVersion: v1
+  kind: Secret
+  metadata:
+    name: mariadb-secrets
+  type: Opaque
+  data:
+    root: cG9ydHVz
 
 
 Secrets are like ConfigMaps but opaque
@@ -189,8 +244,8 @@ They need special permission to be read
 
 * In action
 
-	  ---
-	  ...
+    ---
+    ...
       containers:
       - name: mariadb 
         image: mariadb:10.0.23
@@ -247,116 +302,134 @@ And values from ConfigMaps and Secrets
 
 * Service
 
-	apiVersion: v1
-	kind: Service
-	metadata:
-	  name: registry
-	  labels:
-		app: registry
-	spec:
-	  type: NodePort
-	  # type: LoadBalancer
-	  ports:
-	  - port: 5000
-		targetPort: 5000
-	  selector:
-		app: registry
-		tier: registry
+  apiVersion: v1
+  kind: Service
+  metadata:
+    name: registry
+    labels:
+    app: registry
+  spec:
+    type: NodePort
+    # type: LoadBalancer
+    ports:
+    - port: 5000
+    targetPort: 5000
+    selector:
+    app: registry
+    tier: registry
 
 
 * Network policy
 
-	apiVersion: extensions/v1beta1
-	kind: NetworkPolicy
-	metadata:
-	  name: portus-registry
-	  namespace: scratch
-	spec:
-	  podSelector:
-		matchLabels:
-		  app: registry
-		  tier: registry
-	  ingress:
-		- from:
-		  - namespaceSelector:
-			  matchLabels:
-				name: kube-ingress
-		  - podSelector:
-			  matchLabels:
-				app: portus
-				tier: registry
-		  ports:
-			- protocol: TCP
-			  port: 5000
-			- protocol: TCP
-			  port: 5001
+  apiVersion: extensions/v1beta1
+  kind: NetworkPolicy
+  metadata:
+    name: portus-registry
+    namespace: scratch
+  spec:
+    podSelector:
+    matchLabels:
+      app: registry
+      tier: registry
+    ingress:
+    - from:
+      - namespaceSelector:
+        matchLabels:
+        name: kube-ingress
+      - podSelector:
+        matchLabels:
+        app: portus
+        tier: registry
+      ports:
+      - protocol: TCP
+        port: 5000
+      - protocol: TCP
+        port: 5001
 
 
 
 * Ingress
 
-	apiVersion: extensions/v1beta1
-	kind: Ingress
-	metadata:
-	  name: registry
-	  namespace: scratch
-	  annotations:
-	    kubernetes.io/tls-acme: "true"
-	spec:
-	  tls:
-	  - hosts:
-	    - registry.scratch.ioudaas.no
-	    secretName: registry-tls
-	  rules:
-	  - host: registry.scratch.ioudaas.no
-	    http:
-	      paths:
-	      - path: /
-	        backend:
-	          serviceName: registry
-	          servicePort: 5000
-	
+  apiVersion: extensions/v1beta1
+  kind: Ingress
+  metadata:
+    name: registry
+    namespace: scratch
+    annotations:
+      kubernetes.io/tls-acme: "true"
+  spec:
+    tls:
+    - hosts:
+      - registry.scratch.ioudaas.no
+      secretName: registry-tls
+    rules:
+    - host: registry.scratch.ioudaas.no
+      http:
+        paths:
+        - path: /
+          backend:
+            serviceName: registry
+            servicePort: 5000
+  
 
 
 * Job API
 
-	apiVersion: batch/v1
-	kind: Job
-	metadata:
-	  name: pi-with-timeout
-	spec:
-	  backoffLimit: 5
-	  activeDeadlineSeconds: 100
-	  template:
-		metadata:
-		  name: pi
-		spec:
-		  containers:
-		  - name: pi
-			image: perl
-			command: ["perl",  "-Mbignum=bpi", "-wle", "print bpi(2000)"]
-		  restartPolicy: Never
+  apiVersion: batch/v1
+  kind: Job
+  metadata:
+    name: pi-with-timeout
+  spec:
+    backoffLimit: 5
+    activeDeadlineSeconds: 100
+    template:
+    metadata:
+      name: pi
+    spec:
+      containers:
+      - name: pi
+      image: perl
+      command: ["perl",  "-Mbignum=bpi", "-wle", "print bpi(2000)"]
+      restartPolicy: Never
 
 * Job API CronJobs
 
-	apiVersion: batch/v1beta1
-	kind: CronJob
-	metadata:
-	  name: hello
-	spec:
-	  schedule: "*/1 * * * *"
-	  jobTemplate:
-		spec:
-		  template:
-			spec:
-			  containers:
-			  - name: hello
-				image: busybox
-				args:
-				- /bin/sh
-				- -c
-				- date; echo Hello from the Kubernetes cluster
-			  restartPolicy: OnFailure
+  apiVersion: batch/v1beta1
+  kind: CronJob
+  metadata:
+    name: hello
+  spec:
+    schedule: "*/1 * * * *"
+    jobTemplate:
+    spec:
+      template:
+      spec:
+        containers:
+        - name: hello
+        image: busybox
+        args:
+        - /bin/sh
+        - -c
+        - date; echo Hello from the Kubernetes cluster
+        restartPolicy: OnFailure
+
+* Namespaces
+
+_Kubernetes_supports_multiple_virtual_clusters_backed_by_the_same_physical_cluster._
+_These_virtual_clusters_are_called_namespaces._
+
+.link https://github.com/kubernetes/community/blob/master/contributors/design-proposals/architecture/namespaces.md A mechanism to attach authorization, policy and constraints to a subsection of the cluster
+
+
+* RBAC
+
+In the RBAC API, a role contains rules that represent a set of permissions. 
+
+A role can be defined within a namespace with a Role, or cluster-wide with a ClusterRole.
+
+A Role can only be used to grant access to resources within a single namespace.
+
+
 
 * Demo
 
@@ -367,7 +440,10 @@ And values from ConfigMaps and Secrets
 
 .link http://kompose.io/ Kompose
 
-CI/CD pipelines
+
+CI/CD pipelines 
+
+
 
 
 * Who else is using it?
@@ -380,6 +456,8 @@ Docker (DockerSwarm)
 
 Rancher
 
+Azure container 
+
 Google?
 
 
@@ -390,7 +468,7 @@ Google?
 
 
 
-* Kubernetes @home?
+* Kubernetes in my laptop
 
 .link https://github.com/kubernetes/minikube minikube
 
@@ -400,6 +478,5 @@ or go to the Cloud
 .link https://kubernetes.io/docs/setup/pick-right-solution/#turnkey-cloud-solutions  turnkey-cloud-solutions
  
 .link https://github.com/kubernetes/kops kops (AWS)
-
 
 .link https://github.com/kelseyhightower/kubernetes-the-hard-way kubernetes-the-hard-way
