@@ -46,7 +46,15 @@ It's like a VM but better... and worse
 Virtualize the OS not the hardware
 
 
-.link https://www.youtube.com/watch?v=coFIEH3vXPw potentially funny video
+.link https://youtu.be/sK5i-N34im8 Cgroups, namespaces, and beyond: what are containers made from?
+
+.link https://www.youtube.com/watch?v=coFIEH3vXPw Run containers on bare metal already!
+
+#* Simmetry
+#
+#Kubernetes/Docker for *compute*resources*
+#
+#NAS, file servers, Software Defined Storage for *storage*
 
 
 * Concepts
@@ -203,11 +211,11 @@ My pods need persistent storage
 
 My pods need to talk to many pods but not all the pods
 
-My pods need TLS termination 
- ... and DNS
- ... and load balancing
- ... access control
- ... multitenancy?
+and DNS
+and load balancing
+
+multitenancy?
+access control?
 
 
 * ConfigMap
@@ -436,12 +444,13 @@ A Role can only be used to grant access to resources within a single namespace.
 
 * Environment 
 
-.link https://helm.sh/ Helm/tiller package manager
+.link https://helm.sh/ Helm/tiller Helm
 
 .link http://kompose.io/ Kompose
 
+.link https://draft.sh/ Draft
 
-CI/CD pipelines 
+.link https://www.cncf.io/certification/software-conformance/ conformace
 
 
 
@@ -452,13 +461,15 @@ CI/CD pipelines
 
 .link https://dave.cheney.net/2017/09/06/why-i-joined-heptio 
 
-Docker (DockerSwarm)
+.link https://techcrunch.com/2017/10/17/docker-gives-into-invevitable-and-offers-native-kubernetes-support/ DockerSwarm
 
 Rancher
 
-Azure container 
+.link https://www.prnewswire.com/news-releases/mesosphere-launches-kubernetes-beta-on-new-dcos-110-empowers-developers-with-freedom-of-choice-across-container-orchestration-and-data-services-300514972.html mesos
 
-Google?
+Azure
+
+Google
 
 
 
@@ -468,7 +479,9 @@ Google?
 
 
 
-* Kubernetes in my laptop
+* How do I try it?
+
+On your laptop
 
 .link https://github.com/kubernetes/minikube minikube
 
